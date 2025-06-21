@@ -1,4 +1,4 @@
--- Simple RFM Analysis for E-commerce Transactions Dataset
+-- Query Simple RFM Analysis for E-commerce Transactions Dataset
 -- Hitung RFM untuk setiap pelanggan
 WITH rfm_base AS (
     SELECT
@@ -95,3 +95,31 @@ SELECT
 
 FROM rfm_segmented
 ORDER BY segment DESC;
+
+-- Query repeat-purchase bulanan 
+WITH monthly_orders AS (
+  SELECT
+    customer_id,
+    strftime('%Y-%m', order_date) AS order_month,
+    COUNT(DISTINCT order_id) AS order_count
+  FROM e_commerce_transactions
+  GROUP BY customer_id, order_month
+),
+
+repeat_customers AS (
+  SELECT
+    curr.customer_id,
+    curr.order_month,
+    prev.order_month AS prev_month
+  FROM monthly_orders curr
+  JOIN monthly_orders prev
+    ON curr.customer_id = prev.customer_id
+   AND date(curr.order_month || '-01') > date(prev.order_month || '-01')
+)
+
+SELECT
+  order_month,
+  COUNT(DISTINCT customer_id) AS repeat_customers_count
+FROM repeat_customers
+GROUP BY order_month
+ORDER BY order_month;
