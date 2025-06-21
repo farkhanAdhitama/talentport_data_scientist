@@ -10,13 +10,13 @@ WITH rfm_base AS (
     GROUP BY customer_id
 ),
 
--- 2. Tentukan tanggal paling baru
+-- Tentukan tanggal paling baru
 reference_date AS (
     SELECT MAX(DATE(order_date)) AS today
     FROM e_commerce_transactions
 ),
 
--- 3. Hitung nilai recency dengan mengurangi tanggal terbaru dan terlama
+-- Hitung nilai recency dengan mengurangi tanggal terbaru dan terlama
 rfm_scores AS (
     SELECT
         r.customer_id,
@@ -27,7 +27,7 @@ rfm_scores AS (
     CROSS JOIN reference_date rd
 ),
 
--- 4. Hitung kuartil untuk frequency dan monetary
+-- Hitung kuartil untuk frequency dan monetary
 quartiles AS (
     SELECT
         (SELECT frequency FROM rfm_scores ORDER BY frequency LIMIT 1 OFFSET (SELECT COUNT(*) FROM rfm_scores) * 1 / 4) AS f_q1,
